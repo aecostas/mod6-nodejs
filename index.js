@@ -31,39 +31,38 @@ const logger = createLogger({
   ]
 });
 
+const api = axiosCacheAdapter.setup({
+  // `axios` options
+  baseURL: 'https://abertos.xunta.gal',
+ 
+  // `axios-cache-adapter` options
+  cache: {
+    maxAge: 0.5 * 60 * 1000
+  }
+})
+
 const app = express();
-let lastUpdated = 0;
-let beaches = [];
 
 app.get('/beaches', async (req, res) => {
-  let currentDate = new Date();
+  const response = await api.get('/catalogo/cultura-ocio-deporte/-/dataset/0401/praias-galegas-con-bandeira-azul-2019/001/descarga-directa-ficheiro.csv');
 
-  if (currentDate - lastUpdated > 10000) {
-    lastUpdated = currentDate;
+  logger.log({
+    level: 'debug',
+    message: `Received message from external server (cached: ${response.request.fromCache === true})`
+  });
 
-    const response = await axios.get(url);
-  
-    logger.log({
-      level: 'debug',
-      message: 'Received message from external server'
-    });
-
-    parse(response.data, {
-      trim: true,
-      skip_empty_lines: true,
-      delimiter:';',
-      columns: true
-    },
-    function(err, result) {
-      beaches = result;
-      res.send(result)
-    })
-
-  } else {
-    res.send(beaches);
-  }
+  parse(response.data, {
+    trim: true,
+    skip_empty_lines: true,
+    delimiter:';',
+    columns: true
+  },
+  function(err, result) {
+    res.send(result)
+  })
 
 });
+
 
 app.get('/students/', function (req, res) {
   res.send('<html><head></header><body><b>hola estduiante!</b></body></html>');

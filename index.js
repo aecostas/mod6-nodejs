@@ -1,4 +1,9 @@
 const axios = require('axios');
+
+const axiosCacheAdapter = require('axios-cache-adapter');
+
+// axiosCacheAdapter.setup
+
 const express = require('express');
 const parse = require('csv-parse');
 
@@ -30,38 +35,34 @@ const app = express();
 let lastUpdated = 0;
 let beaches = [];
 
-app.get('/beaches', (req, res) => {
+app.get('/beaches', async (req, res) => {
   let currentDate = new Date();
 
   if (currentDate - lastUpdated > 10000) {
     lastUpdated = currentDate;
 
-    axios.get(url).then( (response) => {
-
-      logger.log({
-        level: 'debug',
-        message: 'Received message from external server'
-      });
+    const response = await axios.get(url);
   
-      parse(response.data, {
-        trim: true,
-        skip_empty_lines: true,
-        delimiter:';',
-        columns: true
-      },
-      function(err, result) {
-        beaches = result;
-        res.send(result)
-      })
-    
+    logger.log({
+      level: 'debug',
+      message: 'Received message from external server'
     });
+
+    parse(response.data, {
+      trim: true,
+      skip_empty_lines: true,
+      delimiter:';',
+      columns: true
+    },
+    function(err, result) {
+      beaches = result;
+      res.send(result)
+    })
 
   } else {
     res.send(beaches);
   }
 
-
-  
 });
 
 app.get('/students/', function (req, res) {

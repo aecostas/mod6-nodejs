@@ -27,27 +27,40 @@ const logger = createLogger({
 });
 
 const app = express();
+let lastUpdated = 0;
+let beaches = [];
 
 app.get('/beaches', (req, res) => {
+  let currentDate = new Date();
 
-  axios.get(url).then( (response) => {
+  if (currentDate - lastUpdated > 10000) {
+    lastUpdated = currentDate;
 
-    logger.log({
-      level: 'debug',
-      message: 'Received message from external server'
+    axios.get(url).then( (response) => {
+
+      logger.log({
+        level: 'debug',
+        message: 'Received message from external server'
+      });
+  
+      parse(response.data, {
+        trim: true,
+        skip_empty_lines: true,
+        delimiter:';',
+        columns: true
+      },
+      function(err, result) {
+        beaches = result;
+        res.send(result)
+      })
+    
     });
 
-    parse(response.data, {
-      trim: true,
-      skip_empty_lines: true,
-      delimiter:';',
-      columns: true
-    },
-    function(err, result) {
-      res.send(result)
-    })
-  
-  });
+  } else {
+    res.send(beaches);
+  }
+
+
   
 });
 

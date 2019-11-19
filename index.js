@@ -1,19 +1,80 @@
 const axios = require('axios');
+const express = require('express');
 const parse = require('csv-parse');
-const winston = require('winston');
+
+const { createLogger, format, transports } = require('winston');
+const { combine, timestamp, label, printf } = format;
 
 const url = 'https://abertos.xunta.gal/catalogo/cultura-ocio-deporte/-/dataset/0401/praias-galegas-con-bandeira-azul-2019/001/descarga-directa-ficheiro.csv';
 
-const logger = winston.createLogger({
+const myFormat = printf(({ level, message, label, timestamp }) => {
+  return `${timestamp} [${label}] ${level}: ${message}`;
+});
+
+const logger = createLogger({
   level: 'debug',
-  format: winston.format.json(),
+  format:  combine(
+    label({ label: 'main' }),
+    timestamp(),
+    myFormat
+  ),
   defaultMeta: { service: 'user-service' },
   transports: [
-    new winston.transports.File({ filename: 'error.log', level: 'error' }),
-    new winston.transports.File({ filename: 'combined.log' }),
-    new winston.transports.Console({format: winston.format.simple()})
+    new transports.File({ filename: 'error.log', level: 'error' }),
+    new transports.File({ filename: 'combined.log' }),
+    new transports.Console()
   ]
 });
+
+const app = express();
+
+app.get('/beaches', (req, res) => {
+
+  axios.get(url).then( (response) => {
+
+    logger.log({
+      level: 'debug',
+      message: 'Received message from external server'
+    });
+
+    parse(response.data, {
+      trim: true,
+      skip_empty_lines: true,
+      delimiter:';',
+      columns: true
+    },
+    function(err, result) {
+      res.send(result)
+    })
+  
+  });
+  
+});
+
+app.get('/students/', function (req, res) {
+  res.send('<html><head></header><body><b>hola estduiante!</b></body></html>');
+});
+
+app.get('/', function (req, res) {
+  const state = req.query['state'];
+
+  logger.log({
+    level:'debug',
+    message: JSON.stringify(req.query)
+  });
+
+
+  if (state === undefined) {
+    res.status(400).send('Falta un parámetro!!!!');
+  } else if (state.toLowerCase() == 'pontevedra') {
+    res.send('Estas en Pontevedra');
+  } else {
+    res.send('NO ESTÁS EN PONTEVEDRA');
+  }
+
+});
+
+
 
 logger.log({
   level: 'info',
@@ -25,21 +86,9 @@ logger.log({
   message: 'debugging message'
 });
 
-axios.get(url).then( (response) => {
 
-  parse(response.data, {
-    trim: true,
-    skip_empty_lines: true,
-    delimiter:';',
-    columns: true
-  },
-  function(err, result) {
-    console.log(result.length);
-  })
 
+app.listen(3000, function () {
+  console.log('Example app listening on port 3000!');
 });
-
-
-
-
 

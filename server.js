@@ -1,8 +1,7 @@
 const axios = require('axios');
 
 const axiosCacheAdapter = require('axios-cache-adapter');
-
-// axiosCacheAdapter.setup
+const config = require('./config.json')
 
 const express = require('express');
 const parse = require('csv-parse');
@@ -46,10 +45,7 @@ const app = express();
 app.get('/beaches', async (req, res) => {
   const response = await api.get('/catalogo/cultura-ocio-deporte/-/dataset/0401/praias-galegas-con-bandeira-azul-2019/001/descarga-directa-ficheiro.csv');
 
-  logger.log({
-    level: 'debug',
-    message: `Received message from external server (cached: ${response.request.fromCache === true})`
-  });
+  logger.debug(`Received message from external server (cached: ${response.request.fromCache === true})`);
 
   parse(response.data, {
     trim: true,
@@ -88,20 +84,8 @@ app.get('/', function (req, res) {
 });
 
 
+app.listen(config['port'], function () {
+  logger.info(`Starting points of interest application listening on port ${config['port']}`);
 
-logger.log({
-  level: 'info',
-  message: 'Starting points of interest application!'
-});
-
-logger.log({
-  level: 'debug',
-  message: 'debugging message'
-});
-
-
-
-app.listen(3000, function () {
-  console.log('Example app listening on port 3000!');
 });
 

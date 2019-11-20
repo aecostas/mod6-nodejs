@@ -1,0 +1,8 @@
+{
+    "url": "https://abertos.xunta.gal/catalogo/cultura-ocio-deporte/-/dataset/0401/praias-galegas-con-bandeira-azul-2019/001/descarga-directa-ficheiro.csv",
+    "port": 3001,
+    "log_threshold": {
+        "dev": "debug",
+        "prod": "warn"
+    }
+}

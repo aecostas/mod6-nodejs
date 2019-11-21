@@ -1,0 +1,13 @@
+{
+    "server": {
+        "port": 3333
+    },
+    "logging": {
+        "threshold": "debug"
+    },
+    "resources": {
+        "2019": "https://abertos.xunta.gal/catalogo/cultura-ocio-deporte/-/dataset/0401/praias-galegas-con-bandeira-azul-2019/001/descarga-directa-ficheiro.csv",
+        "2018": "https://abertos.xunta.gal/catalogo/cultura-ocio-deporte/-/dataset/0392/praias-galegas-con-bandeira-azul-2018/001/descarga-directa-ficheiro.csv",
+        "2017": "https://abertos.xunta.gal/catalogo/cultura-ocio-deporte/-/dataset/0380/praias-galegas-con-bandeira-azul-2017/001/descarga-directa-ficheiro.csv"
+    }
+}

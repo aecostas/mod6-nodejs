@@ -1,7 +1,7 @@
 const axios = require('axios');
 
 const axiosCacheAdapter = require('axios-cache-adapter');
-const config = require('./config.json')
+const config = require('config')
 
 const express = require('express');
 const parse = require('csv-parse');
@@ -18,8 +18,7 @@ const myFormat = printf(({ level, message, label, timestamp }) => {
 const logger = createLogger({
   level: 'debug',
   format:  combine(
-    label({ label: 'main' }),
-    timestamp(),
+    label({ label: 'main' }),    timestamp(),
     myFormat
   ),
   defaultMeta: { service: 'user-service' },
@@ -31,10 +30,7 @@ const logger = createLogger({
 });
 
 const api = axiosCacheAdapter.setup({
-  // `axios` options
-  baseURL: 'https://abertos.xunta.gal',
- 
-  // `axios-cache-adapter` options
+   // `axios-cache-adapter` options
   cache: {
     maxAge: 0.5 * 60 * 1000
   }
@@ -43,7 +39,20 @@ const api = axiosCacheAdapter.setup({
 const app = express();
 
 app.get('/beaches', async (req, res) => {
-  const response = await api.get('/catalogo/cultura-ocio-deporte/-/dataset/0401/praias-galegas-con-bandeira-azul-2019/001/descarga-directa-ficheiro.csv');
+  const year = req.query['year'];
+  
+  if (year === undefined) {
+    res.status(400).send('Faltan parametros');
+    return;
+  }
+
+  if (!config.has(`resources.${year}`)) {
+    res.status(404).send('No hay datos de ese año');
+    return;
+  }
+
+  const url = config.get(`resources.${year}`);
+  const response = await api.get(url);
 
   logger.debug(`Received message from external server (cached: ${response.request.fromCache === true})`);
 
@@ -54,7 +63,20 @@ app.get('/beaches', async (req, res) => {
     columns: true
   },
   function(err, result) {
-    res.send(result)
+    const state = req.query['state']; 
+
+    if (state !== undefined) {
+      const filteredData = result.filter( item => item['C�DIGO PROVINCIA'] === state);
+
+      if (filteredData.length === 0) {
+        res.status(404).send('No hay datos');
+      } else {
+        res.send(filteredData);
+      }
+    } else {
+      res.send(result);
+    }
+    
   })
 
 });
@@ -83,9 +105,9 @@ app.get('/', function (req, res) {
 
 });
 
+const port = config.get('server.port');
 
-app.listen(config['port'], function () {
-  logger.info(`Starting points of interest application listening on port ${config['port']}`);
-
+app.listen(port, function () {
+  logger.info(`Starting points of interest application listening on port ${port}`);
 });
 

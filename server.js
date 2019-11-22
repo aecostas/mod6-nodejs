@@ -38,6 +38,38 @@ const api = axiosCacheAdapter.setup({
 
 const app = express();
 
+const csvToObject = (data, delimiter) => {
+  return new Promise((resolve, reject) => {
+    parse(data, {
+      trim: true,
+      skip_empty_lines: true,
+      delimiter: delimiter,
+      columns: true
+    },
+    function(err, result) {
+      resolve(result);
+    });
+
+  })
+}
+
+app.get('/theater', async (req, res) => {
+  const url = config.get(`resources.theater`);
+  const response =  await api.get(url);
+  const result = await csvToObject(response.data, ';')
+
+  res.send(result);
+});
+
+app.get('/council', async (req, res) => {
+  const url = config.get(`resources.council`);
+  const response = await api.get(url);
+  const result = await csvToObject(response.data, ',')
+
+  res.send(result);
+})
+
+
 app.get('/beaches', async (req, res) => {
   const year = req.query['year'];
   
@@ -46,39 +78,30 @@ app.get('/beaches', async (req, res) => {
     return;
   }
 
-  if (!config.has(`resources.${year}`)) {
+  if (!config.has(`resources.beaches.${year}`)) {
     res.status(404).send('No hay datos de ese año');
     return;
   }
 
-  const url = config.get(`resources.${year}`);
+  const url = config.get(`resources.beaches.${year}`);
   const response = await api.get(url);
 
   logger.debug(`Received message from external server (cached: ${response.request.fromCache === true})`);
 
-  parse(response.data, {
-    trim: true,
-    skip_empty_lines: true,
-    delimiter:';',
-    columns: true
-  },
-  function(err, result) {
-    const state = req.query['state']; 
+  let filteredData = await csvToObject(response.data, ';')
 
-    if (state !== undefined) {
-      const filteredData = result.filter( item => item['C�DIGO PROVINCIA'] === state);
+  const state = req.query['state'];
 
-      if (filteredData.length === 0) {
-        res.status(404).send('No hay datos');
-      } else {
-        res.send(filteredData);
-      }
-    } else {
-      res.send(result);
-    }
-    
-  })
+  if (state !== undefined) {
+    filteredData = filteredData.filter(item => item['C�DIGO PROVINCIA'] === state);
+  }
+  
+  if (filteredData.length === 0) {
+    res.status(404).send('No hay datos');
+    return;
+  } 
 
+  res.send(filteredData);
 });
 
 

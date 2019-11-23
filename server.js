@@ -56,26 +56,21 @@ const transformToCommonFormat = (item) => {
 
   output['concello'] = item['CONCELLO'];
   output['provincia'] = item['PROVINCIA'];
+  output['web'] = item['PORTAL WEB'] || item['WEB'] || item['M�IS INFORMACI�N EN TURGALICIA'];
+  output['nome'] = item['PRAIA'] ||  item['ESPAZO'] || item['CONCELLO'];
+  output['coordenadas'] = item['COORDENADAS'] || `${item['LATITUD']}, ${item['LONGITUD']}`
+
   output.data = {};
 
   if (item['PRAIA'] !== undefined) {
-    output['nome'] = item['PRAIA'];
-    output['coordenadas'] = item['COORDENADAS'];
-    output['web'] = item['PORTAL WEB'];
+    
     output['data']['tipoArea'] = item['TIPO DE AREA'];
     output['data']['lonxitude'] = item['LONXITUDE'];
 
   } else if (item['AFORAMENTO'] !== undefined) {
-    output['nome'] = item['ESPAZO'];
-    output['coordenadas'] = item['COORDENADAS'];
-    output['web'] = item['WEB'];
     output['data']['aforamento'] = item['AFORAMENTO'];
 
-  } else {
-    output['nome'] = item['CONCELLO'];
-    output['coordenadas'] = `${item['LATITUD']}, ${item['LONGITUD']}`
-    output['web'] = item['M�IS INFORMACI�N EN TURGALICIA'];
-  }
+  } 
 
   return output;
 }

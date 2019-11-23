@@ -5,7 +5,6 @@ const config = require('config')
 
 const express = require('express');
 const parse = require('csv-parse');
-
 const { createLogger, format, transports } = require('winston');
 const { combine, timestamp, label, printf } = format;
 
@@ -37,7 +36,6 @@ const api = axiosCacheAdapter.setup({
 })
 
 const app = express();
-
 const csvToObject = (data, delimiter) => {
   return new Promise((resolve, reject) => {
     parse(data, {
@@ -58,7 +56,22 @@ app.get('/theater', async (req, res) => {
   const response =  await api.get(url);
   const result = await csvToObject(response.data, ';')
 
-  res.send(result);
+  const transformedResult = result.map( item => {
+    const newObj = {};
+
+    newObj['concello'] = item['CONCELLO'];
+    newObj['provincia'] = item['PROVINCIA'];
+    newObj['coordenadas'] = item['COORDENADAS'];
+    newObj['web'] = item['WEB'];
+    newObj['nome'] = item['ESPAZO'];
+    newObj['data'] = {
+      aforamento: item['AFORAMENTO']
+    };
+
+    return newObj;
+  });
+
+  res.send(transformedResult);
 });
 
 app.get('/council', async (req, res) => {
@@ -66,7 +79,21 @@ app.get('/council', async (req, res) => {
   const response = await api.get(url);
   const result = await csvToObject(response.data, ',')
 
-  res.send(result);
+  const transformedResult = result.map( item => {
+    const newObj = {};
+
+    newObj['concello'] = item['CONCELLO'];
+    newObj['provincia'] = item['PROVINCIA'];
+    newObj['coordenadas'] = `${item['LATITUD']}, ${item['LONGITUD']}`;
+    newObj['web'] = item['PORTAL WEB'];
+    newObj['nome'] = item['CONCELLO'];
+    newObj['data'] = {};
+
+    return newObj;
+  });
+
+  res.send(transformedResult);
+
 })
 
 
@@ -101,7 +128,24 @@ app.get('/beaches', async (req, res) => {
     return;
   } 
 
-  res.send(filteredData);
+  const transformedResult = filteredData.map( item => {
+    const newObj = {};
+
+    newObj['concello'] = item['CONCELLO'];
+    newObj['provincia'] = item['PROVINCIA'];
+    newObj['coordenadas'] = item['COORDENADAS'];
+    newObj['web'] = item['M�IS INFORMACI�N EN TURGALICIA'];
+    newObj['nome'] = item['PRAIA'];
+    newObj['data'] = {};
+    newObj['data']['tipo'] =  item['TIPO'],
+    newObj['data']['tipoArea'] = item['TIPO DE AREA'],
+    newObj['data']['lonxitude'] = item['LONXITUDE']
+
+    return newObj;
+  });
+
+  res.send(transformedResult);
+
 });
 
 

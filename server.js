@@ -51,25 +51,43 @@ const csvToObject = (data, delimiter) => {
   })
 }
 
+const transformToCommonFormat = (item) => {
+  let output = {};
+
+  output['concello'] = item['CONCELLO'];
+  output['provincia'] = item['PROVINCIA'];
+  output.data = {};
+
+  if (item['PRAIA'] !== undefined) {
+    output['nome'] = item['PRAIA'];
+    output['coordenadas'] = item['COORDENADAS'];
+    output['web'] = item['PORTAL WEB'];
+    output['data']['tipoArea'] = item['TIPO DE AREA'];
+    output['data']['lonxitude'] = item['LONXITUDE'];
+
+  } else if (item['AFORAMENTO'] !== undefined) {
+    output['nome'] = item['ESPAZO'];
+    output['coordenadas'] = item['COORDENADAS'];
+    output['web'] = item['WEB'];
+    output['data']['aforamento'] = item['AFORAMENTO'];
+
+  } else {
+    output['nome'] = item['CONCELLO'];
+    output['coordenadas'] = `${item['LATITUD']}, ${item['LONGITUD']}`
+    output['web'] = item['M�IS INFORMACI�N EN TURGALICIA'];
+  }
+
+  return output;
+}
+
+
 app.get('/theater', async (req, res) => {
   const url = config.get(`resources.theater`);
   const response =  await api.get(url);
   const result = await csvToObject(response.data, ';')
 
-  const transformedResult = result.map( item => {
-    const newObj = {};
+  const transformedResult = result.map( transformTooutputFormat );
 
-    newObj['concello'] = item['CONCELLO'];
-    newObj['provincia'] = item['PROVINCIA'];
-    newObj['coordenadas'] = item['COORDENADAS'];
-    newObj['web'] = item['WEB'];
-    newObj['nome'] = item['ESPAZO'];
-    newObj['data'] = {
-      aforamento: item['AFORAMENTO']
-    };
-
-    return newObj;
-  });
 
   res.send(transformedResult);
 });

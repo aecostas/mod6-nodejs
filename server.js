@@ -4,7 +4,10 @@ const axiosCacheAdapter = require('axios-cache-adapter');
 const config = require('config')
 
 const express = require('express');
-const parse = require('csv-parse');
+const bodyParser = require('body-parser');
+
+const utils = require('./utils');
+
 const { createLogger, format, transports } = require('winston');
 const { combine, timestamp, label, printf } = format;
 
@@ -36,61 +39,34 @@ const api = axiosCacheAdapter.setup({
 })
 
 const app = express();
-const csvToObject = (data, delimiter) => {
-  return new Promise((resolve, reject) => {
-    parse(data, {
-      trim: true,
-      skip_empty_lines: true,
-      delimiter: delimiter,
-      columns: true
-    },
-    function(err, result) {
-      resolve(result);
-    });
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
-  })
-}
+app.post('/test', (req, res) => {
+  console.log('llega peticion: ', req.body);
+  
+  res.send();
+})
 
-const transformToCommonFormat = (item) => {
-  let output = {};
+app.get('/poi', (req, res) => {
+  res.send(['theater', 'beaches', 'council']);
+});
 
-  output['concello'] = item['CONCELLO'];
-  output['provincia'] = item['PROVINCIA'];
-  output['web'] = item['PORTAL WEB'] || item['WEB'] || item['M�IS INFORMACI�N EN TURGALICIA'];
-  output['nome'] = item['PRAIA'] ||  item['ESPAZO'] || item['CONCELLO'];
-  output['coordenadas'] = item['COORDENADAS'] || `${item['LATITUD']}, ${item['LONGITUD']}`
-
-  output.data = {};
-
-  if (item['PRAIA'] !== undefined) {
-    
-    output['data']['tipoArea'] = item['TIPO DE AREA'];
-    output['data']['lonxitude'] = item['LONXITUDE'];
-
-  } else if (item['AFORAMENTO'] !== undefined) {
-    output['data']['aforamento'] = item['AFORAMENTO'];
-
-  } 
-
-  return output;
-}
-
-
-app.get('/theater', async (req, res) => {
+app.get('/poi/theater', async (req, res) => {
   const url = config.get(`resources.theater`);
   const response =  await api.get(url);
-  const result = await csvToObject(response.data, ';')
+  const result = await utils.transformCSV(response.data, ';')
 
-  const transformedResult = result.map( transformTooutputFormat );
+  const transformedResult = result.map( utils.transformObject );
 
 
   res.send(transformedResult);
 });
 
-app.get('/council', async (req, res) => {
+app.get('/poi/council', async (req, res) => {
   const url = config.get(`resources.council`);
   const response = await api.get(url);
-  const result = await csvToObject(response.data, ',')
+  const result = await utils.transformCSV(response.data, ',')
 
   const transformedResult = result.map( item => {
     const newObj = {};
@@ -110,7 +86,7 @@ app.get('/council', async (req, res) => {
 })
 
 
-app.get('/beaches', async (req, res) => {
+app.get('/poi/beaches', async (req, res) => {
   const year = req.query['year'];
   
   if (year === undefined) {
@@ -128,7 +104,7 @@ app.get('/beaches', async (req, res) => {
 
   logger.debug(`Received message from external server (cached: ${response.request.fromCache === true})`);
 
-  let filteredData = await csvToObject(response.data, ';')
+  let filteredData = await utils.transformCSV(response.data, ';')
 
   const state = req.query['state'];
 

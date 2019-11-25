@@ -138,29 +138,6 @@ app.get('/poi/beaches', async (req, res) => {
 });
 
 
-app.get('/students/', function (req, res) {
-  res.send('<html><head></header><body><b>hola estduiante!</b></body></html>');
-});
-
-app.get('/', function (req, res) {
-  const state = req.query['state'];
-
-  logger.log({
-    level:'debug',
-    message: JSON.stringify(req.query)
-  });
-
-
-  if (state === undefined) {
-    res.status(400).send('Falta un parámetro!!!!');
-  } else if (state.toLowerCase() == 'pontevedra') {
-    res.send('Estas en Pontevedra');
-  } else {
-    res.send('NO ESTÁS EN PONTEVEDRA');
-  }
-
-});
-
 const port = config.get('server.port');
 
 app.listen(port, function () {

@@ -171,10 +171,59 @@ app.post('/poi', (req, res) => {
 })
 
 app.post('/poi/:collection', (req, res) => {
-  req.params['collection']
+  const collection = req.params['collection'];
 
+  if (poiMap[collection] === undefined) {
+    res.status(404).send();
+  }
+  
+  const concello = req.body['concello'];
+  const provincia = req.body['provincia'];
+  const web = req.body['web'];
+  const nome = req.body['nome'];
+  const coordenadas = req.body['coordenadas'];
+
+  let poiData = {};
+
+  poiData['concello'] = concello;
+  poiData['provincia'] = provincia;
+  poiData['web'] = web;
+  poiData['nome'] = nome;
+  poiData['coordenadas'] = coordenadas;
+
+
+  for (let value of Object.values(poiData)) {
+    if (value === undefined || value.trim().length === 0) {
+      res.status(400).send();
+      return
+    }
+  }
+
+  poiData.data = {};
+
+  for (let key of Object.keys(req.body)) {
+    if (poiData[key] === undefined) {
+      const value = req.body[key].trim();
+
+      if (value.length === 0) {
+        res.status(400).send();
+        return;
+      }
+
+      poiData.data[key] = value;
+    }
+  }
+
+
+  poiMap[collection].push(poiData);
+  res.send();
   
 })
+
+app.get('/poi/:collection', (req, res) => {
+  // TODO: CHECK IF EXISTS
+  res.send(poiMap[req.params.collection]);
+});
 
 const port = config.get('server.port');
 

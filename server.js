@@ -38,7 +38,13 @@ const api = axiosCacheAdapter.setup({
   }
 })
 
-let listOfPoi = ['theater', 'beaches', 'council'];
+
+let poiMap = {
+  theater: [],
+  beaches: [],
+  council: []
+}
+
 
 const app = express();
 app.use(bodyParser.json());
@@ -51,7 +57,7 @@ app.post('/test', (req, res) => {
 })
 
 app.get('/poi', (req, res) => {
-  res.send(listOfPoi);
+  res.send(Object.keys(poiMap));
 });
 
 app.get('/poi/theater', async (req, res) => {
@@ -154,18 +160,20 @@ app.post('/poi', (req, res) => {
     return;
   }
 
-  if (listOfPoi.indexOf(name) !== -1) {
+  if (poiMap[name] !== undefined) {
     res.status(409).send();
     return;
   }
 
-  listOfPoi.push(name);
+  poiMap[name] = [];
   
   res.send();
 })
 
 app.post('/poi/:collection', (req, res) => {
   req.params['collection']
+
+  
 })
 
 const port = config.get('server.port');

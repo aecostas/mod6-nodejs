@@ -221,7 +221,12 @@ app.post('/poi/:collection', (req, res) => {
 })
 
 app.get('/poi/:collection', (req, res) => {
-  // TODO: CHECK IF EXISTS
+  const collection = req.params['collection'];
+
+  if (poiMap[collection] === undefined) {
+    res.status(404).send();
+    return;
+  }
   res.send(poiMap[req.params.collection]);
 });
 

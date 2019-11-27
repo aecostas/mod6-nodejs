@@ -175,10 +175,12 @@ app.post('/poi/:collection', (req, res) => {
 
   if (poiMap[collection] === undefined) {
     res.status(404).send();
+    return
   }
 
   if (collection ==='beaches' || collection ==='theater' || collection ==='council') {
     res.status(405).send();
+    return
   }
   
   const concello = req.body['concello'];
@@ -227,6 +229,13 @@ app.post('/poi/:collection', (req, res) => {
 app.get('/poi/:collection', (req, res) => {
   // TODO: CHECK IF EXISTS
   res.send(poiMap[req.params.collection]);
+});
+
+
+app.delete ('/poi/:collection/:id', (req, res) => {
+  let id = req.body['id'];
+
+
 });
 
 const port = config.get('server.port');

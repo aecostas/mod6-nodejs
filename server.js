@@ -176,6 +176,10 @@ app.post('/poi/:collection', (req, res) => {
   if (poiMap[collection] === undefined) {
     res.status(404).send();
   }
+
+  if (collection ==='beaches' || collection ==='theater' || collection ==='council') {
+    res.status(405).send();
+  }
   
   const concello = req.body['concello'];
   const provincia = req.body['provincia'];

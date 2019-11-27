@@ -221,7 +221,7 @@ app.post('/poi/:collection', (req, res) => {
   
   id++;
   
-  res.send(poiData);
+  res.send(poiData.id);
 
   
 })

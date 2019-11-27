@@ -193,7 +193,7 @@ app.post('/poi/:collection', (req, res) => {
   poiData['coordenadas'] = coordenadas;
 
   for (let value of Object.values(poiData)) {
-    if (value === undefined || value.toString().trim().length === 0) {
+    if (value === undefined || value.trim().length === 0) {
       res.status(400).send();
       return
     }

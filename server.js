@@ -10,7 +10,7 @@ const utils = require('./utils');
 
 const { createLogger, format, transports } = require('winston');
 const { combine, timestamp, label, printf } = format;
-
+let id = 0;
 const url = 'https://abertos.xunta.gal/catalogo/cultura-ocio-deporte/-/dataset/0401/praias-galegas-con-bandeira-azul-2019/001/descarga-directa-ficheiro.csv';
 
 const myFormat = printf(({ level, message, label, timestamp }) => {
@@ -116,6 +116,7 @@ app.get('/poi/beaches', async (req, res) => {
 
   const state = req.query['state'];
 
+
   if (state !== undefined) {
     filteredData = filteredData.filter(item => item['C�DIGO PROVINCIA'] === state);
   }
@@ -190,10 +191,10 @@ app.post('/poi/:collection', (req, res) => {
   poiData['web'] = web;
   poiData['nome'] = nome;
   poiData['coordenadas'] = coordenadas;
-
+  poiData['id'] = id;
 
   for (let value of Object.values(poiData)) {
-    if (value === undefined || value.trim().length === 0) {
+    if (value === undefined || value.toString().trim().length === 0) {
       res.status(400).send();
       return
     }
@@ -216,7 +217,11 @@ app.post('/poi/:collection', (req, res) => {
 
 
   poiMap[collection].push(poiData);
-  res.send();
+  id++;
+  console.log(poiData);
+  console.log(poiData.id);
+  res.send(poiData);
+
   
 })
 

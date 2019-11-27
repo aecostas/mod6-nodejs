@@ -191,7 +191,6 @@ app.post('/poi/:collection', (req, res) => {
   poiData['web'] = web;
   poiData['nome'] = nome;
   poiData['coordenadas'] = coordenadas;
-  poiData['id'] = id;
 
   for (let value of Object.values(poiData)) {
     if (value === undefined || value.toString().trim().length === 0) {
@@ -199,6 +198,8 @@ app.post('/poi/:collection', (req, res) => {
       return
     }
   }
+
+  poiData['id'] = id;
 
   poiData.data = {};
 
@@ -217,9 +218,9 @@ app.post('/poi/:collection', (req, res) => {
 
 
   poiMap[collection].push(poiData);
+  
   id++;
-  console.log(poiData);
-  console.log(poiData.id);
+  
   res.send(poiData);
 
   

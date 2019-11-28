@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>CORS example</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+</head>
+<body>
+    ejemplo de html estático
+
+    <script>
+        fetch('http://localhost:3333/poi/beaches?year=2019').then(response => {
+            return response.text();
+        })
+        .then((data) => {
+            console.log(data);
+        })
+    </script>
+</body>
+</html>

@@ -212,6 +212,24 @@ app.post('/poi/:collection', (req, res) => {
 
   poiData.data = {};
 
+  
+  const bodyToArray = Object.values(req.body)
+  let commonData = []
+
+  for (i = 0; i < poiMap[collection].length; i++) {
+    let commonToArray = poiMap[collection][i]
+
+    if (poiMap[collection].length > 0) {
+      delete commonToArray.data
+      commonData = Object.values(commonToArray)
+    }
+
+    if (commonData.sort().join() == bodyToArray.sort().join()) {
+      res.status(409).send();
+      return
+    }
+  }
+
   for (let key of Object.keys(req.body)) {
     if (poiData[key] === undefined) {
       const value = req.body[key].trim();

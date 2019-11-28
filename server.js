@@ -52,8 +52,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(express.static('public'));
 
+const domainCors = config.get('domainCors');
 app.use(function (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Origin", domainCors.join(','));
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
 });
@@ -251,6 +252,7 @@ app.delete ('/poi/:collection/:id', (req, res) => {
 
 
 });
+
 
 const port = config.get('server.port');
 

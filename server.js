@@ -219,7 +219,8 @@ app.post('/poi/:collection', (req, res) => {
     poiMap[collection][i].provincia == poiData.provincia &&
     poiMap[collection][i].web == poiData.web &&
     poiMap[collection][i].nome == poiData.nome) {
-      return res.status(409).send()
+    res.status(409).send()
+    return 
     }
   }
   

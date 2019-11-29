@@ -212,25 +212,16 @@ app.post('/poi/:collection', (req, res) => {
 
   poiData.data = {};
 
-  
-  const bodyToArray = Object.values(req.body)
-  let commonData = []
-
   for (i = 0; i < poiMap[collection].length; i++) {
-    let commonToArray = poiMap[collection][i]
-
-    if (poiMap[collection].length > 0) {
-      delete commonToArray.data
-      commonData = Object.values(commonToArray)
-    }
-
-    if (commonData.sort().join() == bodyToArray.sort().join()) {
-      res.status(409).send();
-      return
+   if(poiMap[collection][i].concello == poiData.concello &&
+    poiMap[collection][i].provincia == poiData.provincia &&
+    poiMap[collection][i].web == poiData.web &&
+    poiMap[collection][i].nome == poiData.nome) {
+      return res.status(409).send()
     }
   }
-
-  for (let key of Object.keys(req.body)) {
+  
+   for (let key of Object.keys(req.body)) {
     if (poiData[key] === undefined) {
       const value = req.body[key].trim();
 
@@ -248,7 +239,7 @@ app.post('/poi/:collection', (req, res) => {
   
   id++;
   
-  res.send(poiData.id);
+  res.send(poiData.id.toString());
 
   
 })

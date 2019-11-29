@@ -214,7 +214,17 @@ app.post('/poi/:collection', (req, res) => {
 
   poiData.data = {};
 
-  for (let key of Object.keys(req.body)) {
+  for (i = 0; i < poiMap[collection].length; i++) {
+   if(poiMap[collection][i].concello == poiData.concello &&
+    poiMap[collection][i].provincia == poiData.provincia &&
+    poiMap[collection][i].web == poiData.web &&
+    poiMap[collection][i].nome == poiData.nome) {
+    res.status(409).send()
+    return 
+    }
+  }
+  
+   for (let key of Object.keys(req.body)) {
     if (poiData[key] === undefined) {
       const value = req.body[key].trim();
 

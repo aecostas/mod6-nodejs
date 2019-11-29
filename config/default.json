@@ -13,5 +13,6 @@
         },
         "council": "https://abertos.xunta.gal/catalogo/administracion-publica/-/dataset/0301/casas-dos-concellos-galicia/102/acceso-aos-datos.csv",
         "theater": "https://abertos.xunta.gal/catalogo/cultura-ocio-deporte/-/dataset/0305/teatros-auditorios/001/descarga-directa-ficheiro.csv"
-    }
+    },
+    "domainCors": "[http://localhost:8000"
 }

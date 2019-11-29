@@ -258,14 +258,12 @@ app.patch('/poi/:collection/:id', (req, res) => {
 
   let index = poiMap[collection].findIndex(item => item.id == id);
 
-  console.log(id, index);
-
   if (index === -1) {
     res.status(404).send();
     return;
   }
-  for (param in bodyParams) {
-    if(['id', 'data'].indexOf(param) !== -1) {
+  for (let param in Object.keys(bodyParams)) {
+    if(param === 'id' || param === 'data') {
       continue;
     }
 

@@ -250,8 +250,22 @@ app.get('/poi/:collection', (req, res) => {
 
 app.delete ('/poi/:collection/:id', (req, res) => {
   let id = req.body['id'];
+});
 
+app.delete ('/poi/:collection', (req, res) => {
+  let collection = req.params['collection'];
+  
+  if (poiMap[collection] === undefined) {
+    res.status(404).send();
+    return;
+  }
+  if (poiMap[collection].length > 0) {
+    res.status(409).send();
+    return;
+  } 
 
+  delete poiMap[collection];
+  res.send();
 });
 
 const port = config.get('server.port');

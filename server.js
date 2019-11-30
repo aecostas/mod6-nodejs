@@ -19,8 +19,8 @@ const myFormat = printf(({ level, message, label, timestamp }) => {
 
 const logger = createLogger({
   level: 'debug',
-  format:  combine(
-    label({ label: 'main' }),    timestamp(),
+  format: combine(
+    label({ label: 'main' }), timestamp(),
     myFormat
   ),
   defaultMeta: { service: 'user-service' },
@@ -32,7 +32,7 @@ const logger = createLogger({
 });
 
 const api = axiosCacheAdapter.setup({
-   // `axios-cache-adapter` options
+  // `axios-cache-adapter` options
   cache: {
     maxAge: 0.5 * 60 * 1000
   }
@@ -52,8 +52,10 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(express.static('public'));
 
+const domainCors = config.get('domainCors');
+
 app.use(function (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Origin", domainCors.join(','));
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
 });
@@ -65,10 +67,10 @@ app.get('/poi', (req, res) => {
 
 app.get('/poi/theater', async (req, res) => {
   const url = config.get(`resources.theater`);
-  const response =  await api.get(url);
+  const response = await api.get(url);
   const result = await utils.transformCSV(response.data, ';')
 
-  const transformedResult = result.map( utils.transformObject );
+  const transformedResult = result.map(utils.transformObject);
 
 
   res.send(transformedResult);
@@ -79,7 +81,7 @@ app.get('/poi/council', async (req, res) => {
   const response = await api.get(url);
   const result = await utils.transformCSV(response.data, ',')
 
-  const transformedResult = result.map( item => {
+  const transformedResult = result.map(item => {
     const newObj = {};
 
     newObj['concello'] = item['CONCELLO'];
@@ -99,7 +101,7 @@ app.get('/poi/council', async (req, res) => {
 
 app.get('/poi/beaches', async (req, res) => {
   const year = req.query['year'];
-  
+
   if (year === undefined) {
     res.status(400).send('Faltan parametros');
     return;
@@ -123,13 +125,13 @@ app.get('/poi/beaches', async (req, res) => {
   if (state !== undefined) {
     filteredData = filteredData.filter(item => item['C�DIGO PROVINCIA'] === state);
   }
-  
+
   if (filteredData.length === 0) {
     res.status(404).send('No hay datos');
     return;
-  } 
+  }
 
-  const transformedResult = filteredData.map( item => {
+  const transformedResult = filteredData.map(item => {
     const newObj = {};
 
     newObj['concello'] = item['CONCELLO'];
@@ -138,9 +140,9 @@ app.get('/poi/beaches', async (req, res) => {
     newObj['web'] = item['M�IS INFORMACI�N EN TURGALICIA'];
     newObj['nome'] = item['PRAIA'];
     newObj['data'] = {};
-    newObj['data']['tipo'] =  item['TIPO'],
-    newObj['data']['tipoArea'] = item['TIPO DE AREA'],
-    newObj['data']['lonxitude'] = item['LONXITUDE']
+    newObj['data']['tipo'] = item['TIPO'],
+      newObj['data']['tipoArea'] = item['TIPO DE AREA'],
+      newObj['data']['lonxitude'] = item['LONXITUDE']
 
     return newObj;
   });
@@ -170,7 +172,7 @@ app.post('/poi', (req, res) => {
   }
 
   poiMap[name] = [];
-  
+
   res.send();
 })
 
@@ -182,11 +184,11 @@ app.post('/poi/:collection', (req, res) => {
     return
   }
 
-  if (collection ==='beaches' || collection ==='theater' || collection ==='council') {
+  if (collection === 'beaches' || collection === 'theater' || collection === 'council') {
     res.status(405).send();
     return
   }
-  
+
   const concello = req.body['concello'];
   const provincia = req.body['provincia'];
   const web = req.body['web'];
@@ -203,7 +205,7 @@ app.post('/poi/:collection', (req, res) => {
 
   for (let value of Object.values(poiData)) {
     if (value === undefined || value.trim().length === 0) {
-      res.status(400).send();
+      res.status(400).send('hola');
       return
     }
   }
@@ -212,12 +214,22 @@ app.post('/poi/:collection', (req, res) => {
 
   poiData.data = {};
 
+  for (i = 0; i < poiMap[collection].length; i++) {
+    if (poiMap[collection][i].concello == poiData.concello &&
+      poiMap[collection][i].provincia == poiData.provincia &&
+      poiMap[collection][i].web == poiData.web &&
+      poiMap[collection][i].nome == poiData.nome) {
+      res.status(409).send()
+      return
+    }
+  }
+
   for (let key of Object.keys(req.body)) {
     if (poiData[key] === undefined) {
       const value = req.body[key].trim();
 
       if (value.length === 0) {
-        res.status(400).send();
+        res.status(400).send('adios');
         return;
       }
 
@@ -227,12 +239,12 @@ app.post('/poi/:collection', (req, res) => {
 
 
   poiMap[collection].push(poiData);
-  
-  id++;
-  
-  res.send(poiData.id);
 
-  
+  id++;
+
+  res.send(poiData.id.toString());
+
+
 })
 
 app.get('/poi/:collection', (req, res) => {
@@ -246,15 +258,46 @@ app.get('/poi/:collection', (req, res) => {
 });
 
 
-app.delete ('/poi/:collection/:id', (req, res) => {
-  let id = req.body['id'];
+
+app.delete('/poi/:collection/:id', (req, res) => {
+  let id = parseInt(req.params['id']);
+  const collection = req.params['collection'];
+
+  if (poiMap[collection] === undefined) {
+    res.status(404).send();
+    return
+  }
+
+  for (let i = 0; i < poiMap[collection].length; i++) {
+    if (poiMap[collection][i]['id'] === id) {
+      poiMap[collection].splice(i, 1);
+      res.status(204).send()
+      return
+    }
+  }
+  res.status(404).send();
 
 
 });
+app.delete('/poi/:collection', (req, res) => {
+  let collection = req.params['collection'];
+
+  if (poiMap[collection] === undefined) {
+    res.status(404).send();
+    return;
+  }
+  if (poiMap[collection].length > 0) {
+    res.status(409).send();
+    return;
+  }
+
+  delete poiMap[collection];
+  res.send();
+});
+
 
 const port = config.get('server.port');
 
 app.listen(port, function () {
   logger.info(`Starting points of interest application listening on port ${port}`);
 });
-

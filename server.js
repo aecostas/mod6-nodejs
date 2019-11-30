@@ -53,7 +53,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
 const domainCors = config.get('domainCors');
- 
+
 app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", domainCors.join(','));
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
@@ -215,16 +215,16 @@ app.post('/poi/:collection', (req, res) => {
   poiData.data = {};
 
   for (i = 0; i < poiMap[collection].length; i++) {
-   if(poiMap[collection][i].concello == poiData.concello &&
-    poiMap[collection][i].provincia == poiData.provincia &&
-    poiMap[collection][i].web == poiData.web &&
-    poiMap[collection][i].nome == poiData.nome) {
-    res.status(409).send()
-    return 
+    if (poiMap[collection][i].concello == poiData.concello &&
+      poiMap[collection][i].provincia == poiData.provincia &&
+      poiMap[collection][i].web == poiData.web &&
+      poiMap[collection][i].nome == poiData.nome) {
+      res.status(409).send()
+      return
     }
   }
-  
-   for (let key of Object.keys(req.body)) {
+
+  for (let key of Object.keys(req.body)) {
     if (poiData[key] === undefined) {
       const value = req.body[key].trim();
 
@@ -268,18 +268,20 @@ app.delete('/poi/:collection/:id', (req, res) => {
     return
   }
 
-  for (let i=0; i<poiMap[collection].length; i++) {
+  for (let i = 0; i < poiMap[collection].length; i++) {
     if (poiMap[collection][i]['id'] === id) {
-      poiMap[collection].splice(i,1);
+      poiMap[collection].splice(i, 1);
       res.status(204).send()
       return
     }
   }
   res.status(404).send();
 
-app.delete ('/poi/:collection', (req, res) => {
+
+});
+app.delete('/poi/:collection', (req, res) => {
   let collection = req.params['collection'];
-  
+
   if (poiMap[collection] === undefined) {
     res.status(404).send();
     return;
@@ -287,12 +289,11 @@ app.delete ('/poi/:collection', (req, res) => {
   if (poiMap[collection].length > 0) {
     res.status(409).send();
     return;
-  } 
+  }
 
   delete poiMap[collection];
   res.send();
 });
-
 
 
 const port = config.get('server.port');
@@ -300,4 +301,3 @@ const port = config.get('server.port');
 app.listen(port, function () {
   logger.info(`Starting points of interest application listening on port ${port}`);
 });
-

@@ -242,6 +242,7 @@ app.post('/poi/:collection', (req, res) => {
 
   id++;
 
+
   res.send(poiData.id.toString());
 
 
@@ -257,6 +258,36 @@ app.get('/poi/:collection', (req, res) => {
   res.send(poiMap[req.params.collection]);
 });
 
+app.patch('/poi/:collection/:id', (req, res) => {
+  const collection = req.params['collection'];
+  const id = req.params['id'];
+  const bodyParams = req.body;
+
+  if (poiMap[collection] === undefined) {
+    res.status(404).send();
+    return;
+  }
+
+  let index = poiMap[collection].findIndex(item => item.id == id);
+
+  if (index === -1) {
+    res.status(404).send();
+    return;
+  }
+  for (let param in Object.keys(bodyParams)) {
+    if(param === 'id' || param === 'data') {
+      continue;
+    }
+
+    if (poiMap[collection][index][param] !== undefined) {
+      poiMap[collection][index][param] = bodyParams[param];
+    } else {
+      poiMap[collection][index]['data'][param] = bodyParams[param];
+    }
+  }
+
+  res.send();
+});
 
 
 app.delete('/poi/:collection/:id', (req, res) => {
